@@ -76,13 +76,16 @@ if uploaded_file is None:
     st.stop()
     
 def clean_telco_df(df: pd.DataFrame) -> pd.DataFrame:
-    # Drop ID column (if present)
+    # Drop ID if present
     if "customerID" in df.columns:
         df = df.drop(columns=["customerID"])
 
-    # Fix TotalCharges dtype
-    if "TotalCharges" in df.columns:
-        df["TotalCharges"] = pd.to_numeric(df["TotalCharges"], errors="coerce")
+    # Force numeric columns to numeric
+    numeric_cols = ["tenure", "MonthlyCharges", "TotalCharges", "SeniorCitizen"]
+
+    for col in numeric_cols:
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors="coerce")
 
     return df
 
@@ -127,6 +130,11 @@ clf = joblib.load(model_path)
 
 # To ensure output changes: run on button OR automatically
 if run_btn or True:
+    st.write("### Column dtypes (after cleaning)")
+    st.write(X_test.dtypes)
+
+    st.write("### Missing values count")
+    st.write(X_test.isna().sum())
 
     # Predict
     y_pred = clf.predict(X_test)

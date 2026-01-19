@@ -147,6 +147,18 @@ if run_btn or True:
     st.write("### Missing values count")
     st.write(X_test.isna().sum())
 
+    expected_cols = clf.named_steps["preprocessor"].feature_names_in_
+    X_test = X_test.reindex(columns=expected_cols)
+
+    X_test = X_test.replace(r"^\s*$", np.nan, regex=True)
+
+    preprocessor = clf.named_steps["preprocessor"]
+    num_cols = preprocessor.transformers_[0][2]
+
+    for col in num_cols:
+        if col in X_test.columns:
+            X_test[col] = pd.to_numeric(X_test[col], errors="coerce").astype(float)
+
     # Predict
     y_pred = clf.predict(X_test)
 

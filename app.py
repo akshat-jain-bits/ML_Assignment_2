@@ -74,10 +74,21 @@ run_btn = st.sidebar.button("Run Evaluation")
 if uploaded_file is None:
     st.info("👈 Upload a CSV file from the sidebar to begin.")
     st.stop()
+    
+def clean_telco_df(df: pd.DataFrame) -> pd.DataFrame:
+    # Drop ID column (if present)
+    if "customerID" in df.columns:
+        df = df.drop(columns=["customerID"])
 
+    # Fix TotalCharges dtype
+    if "TotalCharges" in df.columns:
+        df["TotalCharges"] = pd.to_numeric(df["TotalCharges"], errors="coerce")
+
+    return df
 
 # Load uploaded data
 df = pd.read_csv(uploaded_file)
+df = clean_telco_df(df)
 
 st.subheader("📄 Uploaded Dataset Preview")
 st.dataframe(df.head(10), use_container_width=True)

@@ -80,12 +80,23 @@ def clean_telco_df(df: pd.DataFrame) -> pd.DataFrame:
     if "customerID" in df.columns:
         df = df.drop(columns=["customerID"])
 
-    # Force numeric columns to numeric
-    numeric_cols = ["tenure", "MonthlyCharges", "TotalCharges", "SeniorCitizen"]
+    # Strip column names just in case
+    df.columns = [c.strip() for c in df.columns]
 
+    # --- Force numeric columns strictly ---
+    numeric_cols = ["tenure", "MonthlyCharges", "TotalCharges", "SeniorCitizen"]
     for col in numeric_cols:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors="coerce")
+
+    # --- Force categorical columns to plain string ---
+    # (This prevents pandas nullable string dtype issues)
+    for col in df.columns:
+        if col not in numeric_cols and col != "Churn":
+            df[col] = df[col].astype(str)
+
+    # Replace inf/-inf with NaN (rare but can happen)
+    df = df.replace([np.inf, -np.inf], np.nan)
 
     return df
 

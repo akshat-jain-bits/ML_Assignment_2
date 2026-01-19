@@ -159,6 +159,25 @@ if run_btn or True:
         if col in X_test.columns:
             X_test[col] = pd.to_numeric(X_test[col], errors="coerce").astype(float)
 
+    import traceback
+
+preprocessor = clf.named_steps["preprocessor"]
+
+try:
+    # This line isolates preprocessing failure
+    _ = preprocessor.transform(X_test)
+    st.success("✅ Preprocessing successful. Now predicting...")
+except Exception as e:
+    st.error("❌ Preprocessing failed BEFORE prediction.")
+    st.write("### Exception Type:")
+    st.write(type(e).__name__)
+    st.write("### Error message:")
+    st.write(str(e))
+    st.write("### Full traceback:")
+    st.code(traceback.format_exc())
+    st.stop()
+
+    
     # Predict
     y_pred = clf.predict(X_test)
 
